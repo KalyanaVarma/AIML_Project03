@@ -2,10 +2,10 @@
 # Import necessary modules.
 #--------------------------------------------------------------------------------#
 import io
-import cv2
 
 import numpy as np
 
+from cv2 import cv2
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi import File
