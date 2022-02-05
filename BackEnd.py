@@ -8,8 +8,7 @@ import time
 
 import numpy as np
 
-import cv2
-from .cv2 import *
+from cv2 import cv2
 from fastapi import FastAPI
 from fastapi import Request
 from fastapi import File
