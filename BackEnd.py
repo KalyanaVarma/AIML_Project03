@@ -120,7 +120,8 @@ def DetectRoadObjects(InputFile):
   Colors = np.random.randint(0, 255, size = (len(Labels), 3), dtype = "uint8")
   
   # Load YOLOv3 object detector trained on custom i.e. bdd100k dataset (Currently 3 classes i.e. Person, Vehicle, TrafficInfo).
-  Network = cv2.dnn.readNetFromDarknet(PATH_CONFIG, PATH_WEIGHT)
+  # Network = cv2.dnn.readNetFromDarknet(PATH_CONFIG, PATH_WEIGHT)
+  Network = cv2.dnn.readNet(PATH_WEIGHT, PATH_CONFIG)
 
 
   # Get the image height and image width values from the resized color image.
