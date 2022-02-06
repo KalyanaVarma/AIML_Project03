@@ -58,7 +58,7 @@ App = FastAPI()
 Templates = Jinja2Templates(directory = "HTML")
 
 # static/js/post.index js.Required to call from html.
-App.mount("/SupportFiles", StaticFiles(directory="SupportFiles"), name="SupportFiles")
+App.mount("./SupportFiles", StaticFiles(directory="SupportFiles"), name="SupportFiles")
 
 
 #--------------------------------------------------------------------------------#
