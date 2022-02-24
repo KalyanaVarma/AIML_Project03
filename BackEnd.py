@@ -310,112 +310,133 @@ def root(request:Request):
 # POST option.
 @App.post('/')
 async def root(request:Request, UserFile: UploadFile = File(...)):
-  # Clean-up the directory where we kept the processed files in previous execution.
-  for FileName in os.listdir(CLEANUP_FOLDER):
-      os.remove(os.path.join(CLEANUP_FOLDER, FileName))
-
-
-  # Get the filename and  the file name extension of the uploaded file.
-  UserFileName = UserFile.filename
-  UserFileExtn = UserFileName[-4:]
+  BinaryData = io.BytesIO(UserFile.file.read())
   
-  # Check the file extension to take appropriate action.
-  if UserFileExtn == IMAGE_FILE_EXT_JPG or UserFileExtn == IMAGE_FILE_EXT_PNG:
-    #--------------------------------------------------------------------------------#
-    # Step-01.
-    #--------------------------------------------------------------------------------#
-    # If the user uploaded file is of specific type(s) then only process it.
-    InputFile = ProcessUserFile(UserFile)
-    # Check whether the specific file got created at the specific path or not.
-    if not os.path.exists(InputFile):
-      return {"Return":"File is NOT available."}
+  BinaryDataArray = np.asarray(bytearray(BinaryData.read()), dtype=np.uint8)
+
+  OriginalRgbColorImg = cv2.imdecode(BinaryDataArray, cv2.IMREAD_COLOR)
+  OriginalGrayScaleImg = cv2.cvtColor(OriginalRgbColorImg, cv2.COLOR_RGB2GRAY)
+
+  ResizedRgbColorImg = cv2.resize(OriginalRgbColorImg, RESIZE_IMG_TO)
+  ResizedGrayScaleImg = cv2.resize(OriginalGrayScaleImg, RESIZE_IMG_TO)
+
+  cv2.imwrite("static\Input.jpg", ResizedRgbColorImg)
+  cv2.imwrite("static\Output.jpg", ResizedGrayScaleImg)
+
+  InputImg = "Input.jpg"
+  OutputImg = "Output.jpg"
+  InputImg = ("./SupportFiles/Dynamic/Input.jpg")
+  OutputImg = ("./SupportFiles/Dynamic/Output.jpg")
+
+  return Templates.TemplateResponse("Results.html", context = {'request':request, "InputImg":InputImg, "OutputImg":OutputImg})
+
+  
+#   # Clean-up the directory where we kept the processed files in previous execution.
+#   for FileName in os.listdir(CLEANUP_FOLDER):
+#       os.remove(os.path.join(CLEANUP_FOLDER, FileName))
 
 
-    #--------------------------------------------------------------------------------#
-    # Step-02.
-    #--------------------------------------------------------------------------------#
-    # After confirming about the image file creation, send this file to get the road objects detected with bounding boxes.
-    OutputFile = DetectRoadObjects(InputFile)
-    # Check whether the specific file got created at the specific path or not.
-    if not os.path.exists(OutputFile):
-      return {"Return":"File is NOT available."}
+#   # Get the filename and  the file name extension of the uploaded file.
+#   UserFileName = UserFile.filename
+#   UserFileExtn = UserFileName[-4:]
+  
+#   # Check the file extension to take appropriate action.
+#   if UserFileExtn == IMAGE_FILE_EXT_JPG or UserFileExtn == IMAGE_FILE_EXT_PNG:
+#     #--------------------------------------------------------------------------------#
+#     # Step-01.
+#     #--------------------------------------------------------------------------------#
+#     # If the user uploaded file is of specific type(s) then only process it.
+#     InputFile = ProcessUserFile(UserFile)
+#     # Check whether the specific file got created at the specific path or not.
+#     if not os.path.exists(InputFile):
+#       return {"Return":"File is NOT available."}
 
 
-    #--------------------------------------------------------------------------------#
-    # Step-03.
-    #--------------------------------------------------------------------------------#
-    # Return the HTML page that can display the input and output images.
-    return Templates.TemplateResponse("FrontEnd_OutputImage.html", context = {'request':request, "InputFile":InputFile, "OutputFile":OutputFile})
-  elif UserFileExtn == VIDEO_FILE_EXT_MP4:
-    #--------------------------------------------------------------------------------#
-    # Step-01.
-    #--------------------------------------------------------------------------------#
-    # If the user uploaded file is of specific type(s) then only process it.
-    InputFile = ProcessUserFile(UserFile)
-    # Check whether the specific file got created at the specific path or not.
-    if not os.path.exists(InputFile):
-      return {"Return":"File is NOT available."}
+#     #--------------------------------------------------------------------------------#
+#     # Step-02.
+#     #--------------------------------------------------------------------------------#
+#     # After confirming about the image file creation, send this file to get the road objects detected with bounding boxes.
+#     OutputFile = DetectRoadObjects(InputFile)
+#     # Check whether the specific file got created at the specific path or not.
+#     if not os.path.exists(OutputFile):
+#       return {"Return":"File is NOT available."}
 
 
-    #--------------------------------------------------------------------------------#
-    # Step-02.
-    #--------------------------------------------------------------------------------#
-    # Extract the frames from the uploaded video file of specific/allowed type.
-    CheckFrameFile = ExtractFrameFromVideo(InputFile)
-    # Check whether the specific file got created at the specific path or not.
-    # Here, in success case, it is the image file i.e. the last frame of the video file.
-    # in failure case, it is the name of a junk file.
-    if not os.path.exists(CheckFrameFile):
-      return {"Return":"File is NOT available."}
+#     #--------------------------------------------------------------------------------#
+#     # Step-03.
+#     #--------------------------------------------------------------------------------#
+#     # Return the HTML page that can display the input and output images.
+#     return Templates.TemplateResponse("FrontEnd_OutputImage.html", context = {'request':request, "InputFile":InputFile, "OutputFile":OutputFile})
+#   elif UserFileExtn == VIDEO_FILE_EXT_MP4:
+#     #--------------------------------------------------------------------------------#
+#     # Step-01.
+#     #--------------------------------------------------------------------------------#
+#     # If the user uploaded file is of specific type(s) then only process it.
+#     InputFile = ProcessUserFile(UserFile)
+#     # Check whether the specific file got created at the specific path or not.
+#     if not os.path.exists(InputFile):
+#       return {"Return":"File is NOT available."}
 
 
-    #--------------------------------------------------------------------------------#
-    # Step-03.
-    #--------------------------------------------------------------------------------#
-    # After confirming about the last image file creation, send all the image files one by one to get the road objects detected with bounding boxes.
-    # First, get the sorted list of image files which are extracted from the input video file.
-    FrameFileInputList = [File for File in os.listdir(CLEANUP_FOLDER) if File.endswith(IMAGE_FILE_EXT_JPG)]
-    FrameFileInputList.sort(reverse=False)
-
-    # Iterate the list for sending all the image files one by one to get the road objects detected with bounding boxes.
-    for FrameFile in FrameFileInputList:
-      InputFileFrame = CLEANUP_FOLDER + FrameFile
-      OutputFile = DetectRoadObjects(InputFileFrame)
-      # Check whether the specific file got created at the specific path or not.
-      if not os.path.exists(OutputFile):
-        return {"Return":"File is NOT available."}
-
-      # Make the input image file name and output image file name are simular.
-      Temp = InputFileFrame.split(CHAR_DASH)
-      TempFileName = CLEANUP_FOLDER + OUTPUT_FILE_NAME + CHAR_DASH + Temp[1]
-      os.rename(OutputFile, TempFileName)
+#     #--------------------------------------------------------------------------------#
+#     # Step-02.
+#     #--------------------------------------------------------------------------------#
+#     # Extract the frames from the uploaded video file of specific/allowed type.
+#     CheckFrameFile = ExtractFrameFromVideo(InputFile)
+#     # Check whether the specific file got created at the specific path or not.
+#     # Here, in success case, it is the image file i.e. the last frame of the video file.
+#     # in failure case, it is the name of a junk file.
+#     if not os.path.exists(CheckFrameFile):
+#       return {"Return":"File is NOT available."}
 
 
-    #--------------------------------------------------------------------------------#
-    # Step-04.
-    #--------------------------------------------------------------------------------#
-    # Get ONLY the sorted list of image files having the road objects detected with bounding boxes using Python 'set' operations.
-    FrameFileOutputList = [File for File in os.listdir(CLEANUP_FOLDER) if File.endswith(IMAGE_FILE_EXT_JPG)]
-    FrameFileOutputList.sort(reverse=False)
+#     #--------------------------------------------------------------------------------#
+#     # Step-03.
+#     #--------------------------------------------------------------------------------#
+#     # After confirming about the last image file creation, send all the image files one by one to get the road objects detected with bounding boxes.
+#     # First, get the sorted list of image files which are extracted from the input video file.
+#     FrameFileInputList = [File for File in os.listdir(CLEANUP_FOLDER) if File.endswith(IMAGE_FILE_EXT_JPG)]
+#     FrameFileInputList.sort(reverse=False)
 
-    # Python set operations.
-    FrameFileOutputList = list(set(FrameFileOutputList) - set(FrameFileInputList))
-    FrameFileOutputList.sort(reverse=False)
+#     # Iterate the list for sending all the image files one by one to get the road objects detected with bounding boxes.
+#     for FrameFile in FrameFileInputList:
+#       InputFileFrame = CLEANUP_FOLDER + FrameFile
+#       OutputFile = DetectRoadObjects(InputFileFrame)
+#       # Check whether the specific file got created at the specific path or not.
+#       if not os.path.exists(OutputFile):
+#         return {"Return":"File is NOT available."}
 
-    # Using the list of image files having the road objects detected with bounding boxes, create the output video file.
-    OutputFile = CreateVideoFromFrames(FrameFileOutputList)
-    # Check whether the specific file got created at the specific path or not.
-    if not os.path.exists(OutputFile):
-      return {"Return":"File is NOT available."}
+#       # Make the input image file name and output image file name are simular.
+#       Temp = InputFileFrame.split(CHAR_DASH)
+#       TempFileName = CLEANUP_FOLDER + OUTPUT_FILE_NAME + CHAR_DASH + Temp[1]
+#       os.rename(OutputFile, TempFileName)
 
 
-    #--------------------------------------------------------------------------------#
-    # Step-05.
-    #--------------------------------------------------------------------------------#
-    # Return the HTML page that can display the input and output videos.
-    return Templates.TemplateResponse("FrontEnd_OutputVideo.html", context = {'request':request, "InputFile":InputFile, "OutputFile":OutputFile})
-  else:
-    return {"Return":"Unsupported File Selected."}
+#     #--------------------------------------------------------------------------------#
+#     # Step-04.
+#     #--------------------------------------------------------------------------------#
+#     # Get ONLY the sorted list of image files having the road objects detected with bounding boxes using Python 'set' operations.
+#     FrameFileOutputList = [File for File in os.listdir(CLEANUP_FOLDER) if File.endswith(IMAGE_FILE_EXT_JPG)]
+#     FrameFileOutputList.sort(reverse=False)
+
+#     # Python set operations.
+#     FrameFileOutputList = list(set(FrameFileOutputList) - set(FrameFileInputList))
+#     FrameFileOutputList.sort(reverse=False)
+
+#     # Using the list of image files having the road objects detected with bounding boxes, create the output video file.
+#     OutputFile = CreateVideoFromFrames(FrameFileOutputList)
+#     # Check whether the specific file got created at the specific path or not.
+#     if not os.path.exists(OutputFile):
+#       return {"Return":"File is NOT available."}
+
+
+#     #--------------------------------------------------------------------------------#
+#     # Step-05.
+#     #--------------------------------------------------------------------------------#
+#     # Return the HTML page that can display the input and output videos.
+#     return Templates.TemplateResponse("FrontEnd_OutputVideo.html", context = {'request':request, "InputFile":InputFile, "OutputFile":OutputFile})
+#   else:
+#     return {"Return":"Unsupported File Selected."}
 
 
 #--------------------------------------------------------------------------------#
