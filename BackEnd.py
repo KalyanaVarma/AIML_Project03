@@ -54,8 +54,8 @@ async def root(request:Request, UserFile: UploadFile = File(...)):
   ResizedRgbColorImg = cv2.resize(OriginalRgbColorImg, RESIZE_IMG_TO)
   ResizedGrayScaleImg = cv2.resize(OriginalGrayScaleImg, RESIZE_IMG_TO)
 
-  cv2.imwrite("SupportFiles\Dynamic\Input.jpg", ResizedRgbColorImg)
-  cv2.imwrite("SupportFiles\Dynamic\Output.jpg", ResizedGrayScaleImg)
+  cv2.imwrite("./SupportFiles/Dynamic/Input.jpg", ResizedRgbColorImg)
+  cv2.imwrite("./SupportFiles/Dynamic/Output.jpg", ResizedGrayScaleImg)
 
   InputImg = "Input.jpg"
   OutputImg = "Output.jpg"
