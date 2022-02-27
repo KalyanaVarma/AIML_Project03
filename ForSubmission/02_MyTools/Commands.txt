@@ -1,0 +1,26 @@
+D:\ForSubmission>
+python 01_Video_to_Frames.py "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\SourceCode\bdd100k\videos\train" ".mov" ".jpg"
+
+D:\ForSubmission>
+python 02_Frames_to_Video.py "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\SourceCode\bdd100k\videos\train\Video_000000" ".jpg" ".mov"
+
+D:\ForSubmission>
+python 03_Json_to_Yolo.py "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\03 Berkeley DeepDrive Data\bdd100k\images\seg_track_20\train" "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\03 Berkeley DeepDrive Data\bdd100k\labels\box_track_20\train" "0000f77c-62c2a288"
+
+D:\ForSubmission>
+python 04_ImgCompare.py "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\03 Berkeley DeepDrive Data\bdd100k\images\seg_track_20\train\\0000f77c-62c2a288" "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\bdd100k\videos\train\0000f77c-62c2a288"
+
+D:\ForSubmission>
+python 05_AddAnnotation.py "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\03 Berkeley DeepDrive Data\bdd100k\images\seg_track_20\train\0000f77c-6257be58\New folder" "D:t\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\03 Berkeley DeepDrive Data\bdd100k\images\seg_track_20\train\0000f77c-6257be58" "0" "3"
+
+D:\ForSubmission>
+python 06_NumPlateInfo.py "D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\SourceCode\Img2Text\Pics" "[Cat01] MH_Pri_EV_002.jpg" "C:\Program Files\Tesseract-OCR\tesseract.exe" "2"
+
+
+For Local Deployment - On Any Browser:
+D:\2021-11-13 AI, ML PG Course at IIIT, Hyd\Project#03\07 Deployment>
+uvicorn BackEnd:App --reload
+
+
+For Cloud Deployment - On Any Browser:
+https://aiml-project03.herokuapp.com
